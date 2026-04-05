@@ -1,0 +1,7 @@
+.env
+src/vendor/
+src/node_modules/
+src/.env
+src/storage/logs/*.log
+
+TODO.md
