@@ -59,6 +59,29 @@ font-family:
 
 ---
 
+## コンポーネントの命名規則とディレクトリ構造
+
+- ファイル名・ディレクトリ名はPascalCaseで統一する
+- コンポーネントは `PascalCase/index.tsx` の形式で作成する（`PascalCase.tsx` にしない）
+- そのコンポーネント専用の子コンポーネントは同じディレクトリ内に配置する
+
+```
+resources/js/Pages/
+├── Setup/
+│   └── index.tsx
+├── Login/
+│   └── index.tsx
+└── Dashboard/
+    ├── index.tsx
+    └── StatCard/
+        └── index.tsx       ← Dashboard専用の子コンポーネント
+```
+
+- 複数ページで共有するコンポーネントは `resources/js/Components/` に配置する
+- `Inertia::render` では `'Setup/index'` のようにパスを指定する
+
+---
+
 ## 最適化：React Compiler
 
 React Compilerを使用してメモ化を自動化する。`useMemo`・`useCallback`・`React.memo` を手動で書かない。
@@ -126,6 +149,18 @@ React Compilerを使用してメモ化を自動化する。`useMemo`・`useCallb
 ### `use` / `Suspense` との組み合わせ
 
 Promiseを `use()` でunwrapすることで、コンポーネントのレンダリングをデータ取得と宣言的に結びつける。
+
+---
+
+## テスト方針
+
+| 対象 | ツール | 用途 |
+|------|--------|------|
+| ロジック | Vitest | hooks・ユーティリティ関数などの単体テスト |
+| UI | Playwright | ページ操作・画面遷移などのE2Eテスト |
+
+- ロジックのテストはVitestで高速に回す
+- UIの振る舞い（フォーム送信、画面遷移、表示内容の確認など）はPlaywrightで実際のブラウザ上で検証する
 
 ---
 
