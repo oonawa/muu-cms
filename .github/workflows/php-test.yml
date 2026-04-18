@@ -1,0 +1,110 @@
+name: PHP Test
+
+on:
+  workflow_call:
+    inputs:
+      db-connection:
+        required: true
+        type: string
+
+jobs:
+  php-test-mysql:
+    if: inputs.db-connection == 'mysql'
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: muu_cms_test
+          MYSQL_USER: laravel
+          MYSQL_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -prootpassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, exif, pcntl, bcmath, gd, xml
+          coverage: none
+
+      - name: Install PHP dependencies
+        working-directory: src
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src/package-lock.json
+
+      - name: Build frontend
+        working-directory: src
+        run: npm ci && npm run build
+
+      - name: Generate app key
+        working-directory: src
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run tests
+        working-directory: src
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: muu_cms_test
+          DB_USERNAME: laravel
+          DB_PASSWORD: secret
+        run: php artisan test
+
+  php-test-sqlite:
+    if: inputs.db-connection == 'sqlite'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, exif, pcntl, bcmath, gd, xml
+          coverage: none
+
+      - name: Install PHP dependencies
+        working-directory: src
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src/package-lock.json
+
+      - name: Build frontend
+        working-directory: src
+        run: npm ci && npm run build
+
+      - name: Generate app key
+        working-directory: src
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run tests
+        working-directory: src
+        run: php artisan test
