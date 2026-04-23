@@ -6,6 +6,50 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+
+    --color-bg: #f8f8f7;
+    --color-bg-surface: #f0efee;
+    --color-text: #1a1a19;
+    --color-text-muted: #6b6b6a;
+    --color-border: #d4d4d3;
+
+    --color-error: #c4453c;
+    --color-warning: #b5890a;
+    --color-success: #2d8a4e;
+    --color-interactive: #2563eb;
+
+    --ease-spring: linear(
+        0, 0.0107, 0.0398, 0.0834, 0.138, 0.2003, 0.2677, 0.3379, 0.4089,
+        0.4791, 0.5471, 0.612, 0.6731, 0.7297, 0.7815, 0.8283, 0.87, 0.9068,
+        0.9388, 0.9662, 0.9892, 1.0083, 1.0238, 1.0361, 1.0455, 1.0523,
+        1.0569, 1.0596, 1.0607, 1.0604, 1.0591, 1.057, 1.0543, 1.0511,
+        1.0477, 1.0441, 1.0405, 1.037, 1.0336, 1.0305, 1.0277, 1.0252,
+        1.023, 1.0211, 1.0195, 1.0182, 1.0171, 1.0162, 1.0155, 1.015,
+        1.0146, 1.0143, 1.0141, 1.014, 1.0139, 1.0139, 1.0139, 1.014,
+        1.014, 1.0141, 1.0141, 1.0142, 1.0142, 1.0143, 1.0143, 1.0143,
+        1.0143, 1.0143, 1.0143, 1.0142, 1.0142, 1.0141, 1.0141, 1.014,
+        1.0139, 1.0138, 1.0137, 1.0136, 1.0135, 1.0134, 1.0133, 1.0132,
+        1.013, 1.0129, 1.0128, 1.0126, 1.0125, 1.0123, 1.0122, 1.012,
+        1.0118, 1.0117, 1.0115, 1.0113, 1.0111, 1.0109, 1.0107, 1.0105,
+        1.0103, 1.0101, 1
+    );
+}
+
+@layer base {
+    body {
+        background-color: var(--color-bg);
+        color: var(--color-text);
+    }
+}
+
+@keyframes modal-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
