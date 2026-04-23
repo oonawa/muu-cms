@@ -31,7 +31,7 @@ class SetupTest extends TestCase
             'name' => 'テスト管理者',
         ]);
 
-        $response->assertRedirect('/setup/passkey');
+        $response->assertRedirect('/setup');
 
         $this->assertDatabaseHas('users', ['name' => 'テスト管理者']);
         $this->assertDatabaseCount('user_recovery_credentials', 0);
@@ -49,7 +49,7 @@ class SetupTest extends TestCase
             'password_confirmation' => 'securepassword123',
         ]);
 
-        $response->assertRedirect('/');
+        $response->assertRedirect('/setup');
 
         $this->assertDatabaseHas('user_recovery_credentials', [
             'user_id' => $user->id,

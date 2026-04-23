@@ -16,7 +16,7 @@ class EnsureSetupCompleted
             return redirect('/setup');
         }
 
-        if (User::count() > 0 && !Auth::check() && !$request->is('login', 'login/*', 'setup', 'setup/*', 'passkeys/authenticate/*')) {
+        if (User::count() > 0 && !Auth::check() && !$request->is('login', 'login/*', 'setup', 'setup/*', 'passkeys/authenticate', 'passkeys/authenticate/*')) {
             return redirect('/login');
         }
 
