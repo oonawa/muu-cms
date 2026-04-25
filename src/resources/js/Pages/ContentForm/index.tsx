@@ -21,6 +21,29 @@ export default function ContentForm({ parameters, values, onChange }: Props) {
         <div className="flex flex-col gap-4">
             {parameters.map((parameter) => {
                 switch (parameter.type) {
+                    case 'text':
+                        return (
+                            <div key={parameter.id} className="flex flex-col gap-1">
+                                <label
+                                    htmlFor={parameter.name}
+                                    className="text-sm font-medium text-zinc-700"
+                                >
+                                    {parameter.label}
+                                    {!!parameter.is_required && (
+                                        <span className="ml-1 text-red-500">*</span>
+                                    )}
+                                </label>
+                                <textarea
+                                    id={parameter.name}
+                                    name={parameter.name}
+                                    value={values[parameter.name] ?? ''}
+                                    required={parameter.is_required}
+                                    onChange={(e) => onChange(parameter.name, e.target.value)}
+                                    className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    rows={4}
+                                />
+                            </div>
+                        )
                     case 'string':
                     default:
                         return (

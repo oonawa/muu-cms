@@ -74,6 +74,10 @@ class ContentController extends Controller
             $paramRules[] = $parameter->is_required ? 'required' : 'nullable';
             $paramRules[] = 'string';
 
+            if ($parameter->type === 'string') {
+                $paramRules[] = 'not_regex:/[\r\n]/';
+            }
+
             if ($parameter->constraint) {
                 $paramRules[] = "max:{$parameter->constraint->max_length}";
             }

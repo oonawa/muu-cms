@@ -28,7 +28,7 @@ class ParameterController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9_]+$/'],
             'label' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'in:string'],
+            'type' => ['required', 'in:string,text'],
             'is_required' => ['required', 'boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'max_length' => ['nullable', 'integer', 'min:1'],

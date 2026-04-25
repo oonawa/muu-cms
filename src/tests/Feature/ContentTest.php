@@ -88,6 +88,30 @@ class ContentTest extends TestCase
         $response->assertSessionHasErrors('blueprint');
     }
 
+    public function test_string型パラメータに改行が含まれる場合は422を返す(): void
+    {
+        $response = $this->actingAs($this->user)->post("{$this->basePath()}/contents", [
+            'title' => "タイトル\n改行あり",
+        ]);
+
+        $response->assertSessionHasErrors('title');
+        $this->assertDatabaseCount('contents', 0);
+    }
+
+    public function test_text型パラメータで改行を含む値を保存できる(): void
+    {
+        Parameter::create(['spec_id' => $this->spec->id, 'name' => 'body', 'label' => '本文', 'type' => 'text', 'is_required' => true, 'sort_order' => 1]);
+
+        $response = $this->actingAs($this->user)->post("{$this->basePath()}/contents", [
+            'title' => 'テスト記事',
+            'body' => "複数行\nテキスト",
+        ]);
+
+        $response->assertRedirect($this->basePath());
+        $content = Content::first();
+        $this->assertEquals("複数行\nテキスト", $content->data['body']);
+    }
+
     public function test_コンテンツを更新できる(): void
     {
         $content = Content::create(['blueprint_id' => $this->blueprint->id, 'data' => ['title' => '旧タイトル']]);

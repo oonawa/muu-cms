@@ -98,6 +98,19 @@ class ApiTest extends TestCase
         $response->assertExactJson(['title' => 'テスト']);
     }
 
+    public function test_text型パラメータの値が改行を含んだままAPIレスポンスで返る(): void
+    {
+        $blueprint = Blueprint::create(['space_id' => $this->space->id, 'slug' => 'article', 'name' => '記事', 'type' => 'single']);
+        $spec = Spec::create(['blueprint_id' => $blueprint->id]);
+        Parameter::create(['spec_id' => $spec->id, 'name' => 'body', 'label' => '本文', 'type' => 'text', 'is_required' => true, 'sort_order' => 0]);
+        Content::create(['blueprint_id' => $blueprint->id, 'data' => ['body' => "複数行\nテキスト"]]);
+
+        $response = $this->get('/api/v1/article');
+
+        $response->assertStatus(200);
+        $response->assertExactJson(['body' => "複数行\nテキスト"]);
+    }
+
     public function test_追加されたパラメータで既存コンテンツにキーがない場合はnullになる(): void
     {
         $blueprint = Blueprint::create(['space_id' => $this->space->id, 'slug' => 'blog', 'name' => 'ブログ', 'type' => 'single']);
