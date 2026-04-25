@@ -109,4 +109,51 @@ class ContentTest extends TestCase
         $response->assertRedirect($this->basePath());
         $this->assertDatabaseMissing('contents', ['id' => $content->id]);
     }
+
+    public function test_コンテンツ作成フォームにspace_blueprint_parametersが渡される(): void
+    {
+        $response = $this->actingAs($this->user)->get("{$this->basePath()}/contents/create");
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('ContentCreate/index')
+            ->has('space')
+            ->has('blueprint')
+            ->has('parameters')
+        );
+    }
+
+    public function test_コンテンツ編集フォームにspace_blueprint_parameters_contentが渡される(): void
+    {
+        $content = Content::create(['blueprint_id' => $this->blueprint->id, 'data' => ['title' => '編集対象']]);
+
+        $response = $this->actingAs($this->user)->get("{$this->basePath()}/contents/{$content->id}/edit");
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('ContentEdit/index')
+            ->has('space')
+            ->has('blueprint')
+            ->has('parameters')
+            ->has('content')
+        );
+    }
+
+    public function test_コンテンツ作成成功時にflashメッセージが付与される(): void
+    {
+        $response = $this->actingAs($this->user)->post("{$this->basePath()}/contents", [
+            'title' => 'テスト記事',
+        ]);
+
+        $response->assertSessionHas('success');
+    }
+
+    public function test_コンテンツ更新成功時にflashメッセージが付与される(): void
+    {
+        $content = Content::create(['blueprint_id' => $this->blueprint->id, 'data' => ['title' => '旧タイトル']]);
+
+        $response = $this->actingAs($this->user)->put("{$this->basePath()}/contents/{$content->id}", [
+            'title' => '新タイトル',
+        ]);
+
+        $response->assertSessionHas('success');
+    }
 }

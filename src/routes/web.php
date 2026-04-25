@@ -45,6 +45,8 @@ Route::post('/spaces/{space}/blueprints/{blueprint}/parameters', [ParameterContr
 Route::put('/spaces/{space}/blueprints/{blueprint}/parameters/reorder', [ParameterController::class, 'reorder']);
 Route::delete('/spaces/{space}/blueprints/{blueprint}/parameters/{parameter}', [ParameterController::class, 'destroy']);
 
+Route::get('/spaces/{space}/blueprints/{blueprint}/contents/create', [ContentController::class, 'create']);
+Route::get('/spaces/{space}/blueprints/{blueprint}/contents/{content}/edit', [ContentController::class, 'edit']);
 Route::post('/spaces/{space}/blueprints/{blueprint}/contents', [ContentController::class, 'store']);
 Route::put('/spaces/{space}/blueprints/{blueprint}/contents/{content}', [ContentController::class, 'update']);
 Route::delete('/spaces/{space}/blueprints/{blueprint}/contents/{content}', [ContentController::class, 'destroy']);
