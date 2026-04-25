@@ -49,10 +49,10 @@ class BlueprintTest extends TestCase
             'type' => 'multiple',
         ]);
 
-        $response->assertRedirect("/spaces/{$this->space->id}");
         $this->assertDatabaseHas('blueprints', ['slug' => 'blog', 'space_id' => $this->space->id]);
         $blueprint = Blueprint::where('slug', 'blog')->first();
         $this->assertNotNull($blueprint->spec);
+        $response->assertRedirect("/spaces/{$this->space->id}/blueprints/{$blueprint->id}");
     }
 
     public function test_モノの名前を変更できる(): void
@@ -91,5 +91,21 @@ class BlueprintTest extends TestCase
         $this->assertDatabaseMissing('blueprints', ['id' => $blueprint->id]);
         $this->assertDatabaseMissing('specs', ['blueprint_id' => $blueprint->id]);
         $this->assertDatabaseMissing('contents', ['blueprint_id' => $blueprint->id]);
+    }
+
+    public function test_モノ詳細画面のpropsにコンテンツ一覧が含まれる(): void
+    {
+        $blueprint = Blueprint::create(['space_id' => $this->space->id, 'slug' => 'blog', 'name' => 'ブログ', 'type' => 'multiple']);
+        Spec::create(['blueprint_id' => $blueprint->id]);
+        Content::create(['blueprint_id' => $blueprint->id, 'data' => ['title' => 'test1']]);
+        Content::create(['blueprint_id' => $blueprint->id, 'data' => ['title' => 'test2']]);
+
+        $response = $this->actingAs($this->user)->get("/spaces/{$this->space->id}/blueprints/{$blueprint->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Blueprint/index')
+            ->has('contents', 2)
+        );
     }
 }

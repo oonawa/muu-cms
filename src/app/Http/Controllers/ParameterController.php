@@ -18,6 +18,7 @@ class ParameterController extends Controller
             'space' => $space,
             'blueprint' => $blueprint,
             'parameters' => $blueprint->spec->parameters()->orderBy('sort_order')->get(),
+            'contents' => $blueprint->contents()->get(),
             'contents_count' => $blueprint->contents()->count(),
         ]);
     }

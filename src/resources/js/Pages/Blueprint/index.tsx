@@ -21,13 +21,22 @@ type Parameter = {
     sort_order: number
 }
 
+type Content = {
+    id: number
+    blueprint_id: number
+    data: Record<string, unknown>
+    created_at: string
+    updated_at: string
+}
+
 type ViewState = 'default' | 'spec-edit'
 
 export default function Blueprint() {
-    const { space, blueprint, parameters, contents_count } = usePage<{
+    const { space, blueprint, parameters, contents, contents_count } = usePage<{
         space: Space
         blueprint: Blueprint
         parameters: Parameter[]
+        contents: Content[]
         contents_count: number
     }>().props
 
@@ -38,7 +47,9 @@ export default function Blueprint() {
     const hasParameters = parameters.length > 0
 
     function handleSpecCreate(rows: ParameterRow[]) {
-        rows.forEach((row, index) => {
+        function postNext(index: number) {
+            if (index >= rows.length) return
+            const row = rows[index]
             router.post(
                 `/spaces/${space.id}/blueprints/${blueprint.id}/parameters`,
                 {
@@ -48,9 +59,13 @@ export default function Blueprint() {
                     is_required: false,
                     sort_order: index,
                 },
-                { preserveScroll: true },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => postNext(index + 1),
+                },
             )
-        })
+        }
+        postNext(0)
     }
 
     function handleSpecUpdate(rows: ParameterRow[]) {
@@ -64,7 +79,12 @@ export default function Blueprint() {
 
     function submitUpdate(rows: ParameterRow[]) {
         const nextSortOrder = parameters.length
-        rows.forEach((row, index) => {
+        function postNext(index: number) {
+            if (index >= rows.length) {
+                setViewState('default')
+                return
+            }
+            const row = rows[index]
             router.post(
                 `/spaces/${space.id}/blueprints/${blueprint.id}/parameters`,
                 {
@@ -74,10 +94,13 @@ export default function Blueprint() {
                     is_required: false,
                     sort_order: nextSortOrder + index,
                 },
-                { preserveScroll: true },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => postNext(index + 1),
+                },
             )
-        })
-        setViewState('default')
+        }
+        postNext(0)
     }
 
     function handleDeleteParameter(parameterId: number) {
@@ -130,6 +153,55 @@ export default function Blueprint() {
                     }}
                     onCancel={() => setShowConfirmDialog(false)}
                 />
+            )}
+
+            {hasParameters && viewState === 'default' && (
+                <section className="mt-12">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-medium">コンテンツ</h2>
+                        <button
+                            onClick={() => router.visit(`/spaces/${space.id}/blueprints/${blueprint.id}/contents/create`)}
+                            className="rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+                        >
+                            新規作成
+                        </button>
+                    </div>
+
+                    {contents.length === 0 ? (
+                        <div className="text-center py-8 text-[var(--color-text-muted)]">
+                            コンテンツはまだありません
+                        </div>
+                    ) : (
+                        <div className="grid gap-4">
+                            {contents.map((content) => (
+                                <div
+                                    key={content.id}
+                                    className="rounded-lg border border-[var(--color-border)] p-4 hover:border-[var(--color-text)] transition-colors"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                            <p className="font-medium">{String(content.data.title || 'タイトルなし')}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => router.visit(`/spaces/${space.id}/blueprints/${blueprint.id}/contents/${content.id}/edit`)}
+                                                className="rounded-lg border border-[var(--color-border)] px-3 py-1 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+                                            >
+                                                編集
+                                            </button>
+                                            <button
+                                                onClick={() => router.delete(`/spaces/${space.id}/blueprints/${blueprint.id}/contents/${content.id}`)}
+                                                className="rounded-lg border border-[var(--color-border)] px-3 py-1 text-sm text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                                            >
+                                                削除
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
             )}
         </div>
     )

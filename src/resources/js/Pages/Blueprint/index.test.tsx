@@ -5,7 +5,9 @@ import Blueprint from './index'
 vi.mock('@inertiajs/react', () => ({
     usePage: vi.fn(),
     router: {
-        post: vi.fn(),
+        post: vi.fn((url, data, options) => {
+            options?.onSuccess?.()
+        }),
         delete: vi.fn(),
     },
 }))
@@ -15,10 +17,19 @@ import { usePage, router } from '@inertiajs/react'
 const mockUsePage = usePage as ReturnType<typeof vi.fn>
 const mockRouter = router as { post: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> }
 
+type Content = {
+    id: number
+    blueprint_id: number
+    data: Record<string, unknown>
+    created_at: string
+    updated_at: string
+}
+
 const baseProps = {
     space: { id: 1, name: 'テストハコ' },
     blueprint: { id: 1, name: 'テストモノ' },
     parameters: [] as { id: number; name: string; label: string; type: string; sort_order: number }[],
+    contents: [] as Content[],
     contents_count: 0,
     errors: {},
 }
@@ -101,6 +112,40 @@ describe('スペック定義済み時（parametersが1件以上）', () => {
         setup({ parameters: params })
         fireEvent.click(screen.getByRole('button', { name: 'スペック編集' }))
         expect(screen.getByText('スペック編集')).toBeInTheDocument()
+    })
+})
+
+describe('コンテンツセクション', () => {
+    const params = [{ id: 10, name: 'title', label: 'タイトル', type: 'string', sort_order: 0 }]
+
+    it('スペック定義済みでデフォルト表示時にコンテンツ一覧が表示される', () => {
+        const contents: Content[] = [
+            { id: 1, blueprint_id: 1, data: { title: 'テスト1' }, created_at: '2026-04-25', updated_at: '2026-04-25' },
+            { id: 2, blueprint_id: 1, data: { title: 'テスト2' }, created_at: '2026-04-25', updated_at: '2026-04-25' },
+        ]
+        setup({ parameters: params, contents })
+        expect(screen.getByText('テスト1')).toBeInTheDocument()
+        expect(screen.getByText('テスト2')).toBeInTheDocument()
+    })
+
+    it('スペック定義済みでコンテンツがない場合はフォールバックテキストが表示される', () => {
+        setup({ parameters: params, contents: [] })
+        expect(screen.getByText('コンテンツはまだありません')).toBeInTheDocument()
+    })
+
+    it('コンテンツカードに編集・削除ボタンが表示される', () => {
+        const contents: Content[] = [
+            { id: 1, blueprint_id: 1, data: { title: 'テスト1' }, created_at: '2026-04-25', updated_at: '2026-04-25' },
+        ]
+        setup({ parameters: params, contents })
+        const buttons = screen.getAllByRole('button')
+        expect(buttons.some((btn) => btn.textContent === '編集')).toBe(true)
+        expect(buttons.some((btn) => btn.textContent === '削除')).toBe(true)
+    })
+
+    it('新規作成ボタンが表示される', () => {
+        setup({ parameters: params, contents: [] })
+        expect(screen.getByRole('button', { name: '新規作成' })).toBeInTheDocument()
     })
 })
 
