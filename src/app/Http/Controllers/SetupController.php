@@ -11,13 +11,19 @@ use Inertia\Inertia;
 
 class SetupController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
-        if (User::count() > 0) {
+        if (User::count() > 0 && !Auth::check()) {
             abort(403);
         }
 
-        return Inertia::render('Setup/index');
+        if (User::count() > 0 && Auth::check() && !$request->session()->has('setup_step')) {
+            return redirect('/');
+        }
+
+        return Inertia::render('Setup/index', [
+            'step' => $request->session()->get('setup_step', 'name'),
+        ]);
     }
 
     public function storeUser(Request $request)
@@ -34,7 +40,9 @@ class SetupController extends Controller
 
         Auth::login($user);
 
-        return redirect('/setup/passkey');
+        $request->session()->put('setup_step', 'passkey');
+
+        return redirect('/setup');
     }
 
     public function storeRecovery(Request $request)
@@ -50,11 +58,15 @@ class SetupController extends Controller
             'password_hash' => Hash::make($validated['password']),
         ]);
 
-        return redirect('/');
+        $request->session()->put('setup_step', 'complete');
+
+        return redirect('/setup');
     }
 
-    public function complete()
+    public function complete(Request $request)
     {
+        $request->session()->forget('setup_step');
+
         return redirect('/');
     }
 }

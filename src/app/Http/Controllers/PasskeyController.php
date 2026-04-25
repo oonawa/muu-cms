@@ -48,23 +48,42 @@ class PasskeyController extends Controller
             ],
         );
 
-        $request->session()->put('webauthn.creation_options', serialize($options));
+        $request->session()->put('webauthn.creation_challenge', base64_encode($challenge));
+        $request->session()->put('webauthn.creation_user_id', (string) $user->id);
 
         return response()->json($this->serializeCreationOptions($options));
     }
 
     public function register(Request $request)
     {
-        $optionsSerialized = $request->session()->pull('webauthn.creation_options');
-        if (!$optionsSerialized) {
+        $challengeBase64 = $request->session()->pull('webauthn.creation_challenge');
+        $userId = $request->session()->pull('webauthn.creation_user_id');
+        if (!$challengeBase64 || !$userId) {
             return response()->json(['message' => 'Challenge not found'], 400);
         }
 
-        $options = unserialize($optionsSerialized);
+        $user = $request->user();
+        $options = PublicKeyCredentialCreationOptions::create(
+            rp: PublicKeyCredentialRpEntity::create(
+                name: config('app.name', 'muu-cms'),
+                id: $request->getHost(),
+            ),
+            user: PublicKeyCredentialUserEntity::create(
+                name: $user->name,
+                id: $userId,
+                displayName: $user->name,
+            ),
+            challenge: base64_decode($challengeBase64),
+            pubKeyCredParams: [
+                PublicKeyCredentialParameters::createPk(-7),
+                PublicKeyCredentialParameters::createPk(-257),
+            ],
+        );
 
         $attestationStatementSupportManager = AttestationStatementSupportManager::create();
         $factory = new CeremonyStepManagerFactory();
         $factory->setAttestationStatementSupportManager($attestationStatementSupportManager);
+        $factory->setSecuredRelyingPartyId([$request->getHost()]);
         $ceremonyStepManager = $factory->creationCeremony();
 
         $validator = AuthenticatorAttestationResponseValidator::create($ceremonyStepManager);
@@ -96,7 +115,7 @@ class PasskeyController extends Controller
             'sign_count' => $credentialSource->counter,
         ]);
 
-        return redirect('/');
+        return response()->json(['message' => 'Passkey registered']);
     }
 
     public function authenticateOptions(Request $request)
@@ -108,7 +127,7 @@ class PasskeyController extends Controller
             rpId: $request->getHost(),
         );
 
-        $request->session()->put('webauthn.request_options', serialize($options));
+        $request->session()->put('webauthn.request_challenge', base64_encode($challenge));
 
         return response()->json([
             'challenge' => base64url_encode($challenge),
@@ -120,12 +139,15 @@ class PasskeyController extends Controller
 
     public function authenticate(Request $request)
     {
-        $optionsSerialized = $request->session()->pull('webauthn.request_options');
-        if (!$optionsSerialized) {
+        $challengeBase64 = $request->session()->pull('webauthn.request_challenge');
+        if (!$challengeBase64) {
             return response()->json(['message' => 'Challenge not found'], 400);
         }
 
-        $options = unserialize($optionsSerialized);
+        $options = PublicKeyCredentialRequestOptions::create(
+            challenge: base64_decode($challengeBase64),
+            rpId: $request->getHost(),
+        );
 
         $attestationStatementSupportManager = AttestationStatementSupportManager::create();
         $serializerFactory = new WebauthnSerializerFactory($attestationStatementSupportManager);
@@ -153,6 +175,7 @@ class PasskeyController extends Controller
 
         $factory = new CeremonyStepManagerFactory();
         $factory->setAttestationStatementSupportManager($attestationStatementSupportManager);
+        $factory->setSecuredRelyingPartyId([$request->getHost()]);
         $ceremonyStepManager = $factory->requestCeremony();
 
         $validator = AuthenticatorAssertionResponseValidator::create($ceremonyStepManager);
@@ -191,6 +214,10 @@ class PasskeyController extends Controller
                 'alg' => $p->alg,
             ], $options->pubKeyCredParams),
             'timeout' => 60000,
+            'authenticatorSelection' => [
+                'residentKey' => 'required',
+                'userVerification' => 'preferred',
+            ],
             'attestation' => 'none',
         ];
     }
