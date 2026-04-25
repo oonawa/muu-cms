@@ -90,6 +90,20 @@ class ParameterTest extends TestCase
         $this->assertDatabaseMissing('parameters', ['id' => $parameter->id]);
     }
 
+    public function test_text型パラメータを追加できる(): void
+    {
+        $response = $this->actingAs($this->user)->post("{$this->basePath()}/parameters", [
+            'name' => 'body',
+            'label' => '本文',
+            'type' => 'text',
+            'is_required' => true,
+            'sort_order' => 0,
+        ]);
+
+        $response->assertRedirect($this->basePath());
+        $this->assertDatabaseHas('parameters', ['spec_id' => $this->spec->id, 'name' => 'body', 'type' => 'text']);
+    }
+
     public function test_パラメータの順序を変更できる(): void
     {
         $p1 = Parameter::create(['spec_id' => $this->spec->id, 'name' => 'title', 'label' => 'タイトル', 'type' => 'string', 'is_required' => true, 'sort_order' => 0]);

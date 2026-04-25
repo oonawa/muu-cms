@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export type ParameterType = 'string'
+export type ParameterType = 'string' | 'text'
 
 export type ParameterTypeDefinition = {
     value: ParameterType
@@ -13,6 +13,11 @@ export const PARAMETER_TYPES: ParameterTypeDefinition[] = [
         value: 'string',
         label: '1行テキスト',
         description: '改行なしのテキスト。タイトルなどに向いています。',
+    },
+    {
+        value: 'text',
+        label: '複数行テキスト',
+        description: '改行を含むプレーンテキスト。本文・説明文などに向いています。',
     },
 ]
 
