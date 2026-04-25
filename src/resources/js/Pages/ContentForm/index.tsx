@@ -30,7 +30,7 @@ export default function ContentForm({ parameters, values, onChange }: Props) {
                                     className="text-sm font-medium text-zinc-700"
                                 >
                                     {parameter.label}
-                                    {parameter.is_required && (
+                                    {!!parameter.is_required && (
                                         <span className="ml-1 text-red-500">*</span>
                                     )}
                                 </label>

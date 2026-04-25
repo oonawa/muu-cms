@@ -82,19 +82,18 @@ describe('スペック未定義時（parametersが空）', () => {
 
     it('スペック作成ボタンを押すとPOSTが各パラメータ分呼ばれる', () => {
         setup({ parameters: [] })
+        // 表示名を入力
+        const labelInput = screen.getByPlaceholderText('表示名（日本語可）')
+        fireEvent.change(labelInput, { target: { value: 'タイトル' } })
         // パラメータ名を入力
-        const input = screen.getByPlaceholderText('パラメータ名（英数字・アンダースコア）')
-        fireEvent.change(input, { target: { value: 'title' } })
-        // 追加
-        fireEvent.click(screen.getByRole('button', { name: 'パラメータを追加' }))
-        const inputs = screen.getAllByPlaceholderText('パラメータ名（英数字・アンダースコア）')
-        fireEvent.change(inputs[1], { target: { value: 'body' } })
+        const nameInput = screen.getByPlaceholderText('パラメータ名（英数字・アンダースコア）')
+        fireEvent.change(nameInput, { target: { value: 'title' } })
         // 送信
         fireEvent.click(screen.getByRole('button', { name: 'スペック作成' }))
-        expect(mockRouter.post).toHaveBeenCalledTimes(2)
+        expect(mockRouter.post).toHaveBeenCalledTimes(1)
         expect(mockRouter.post).toHaveBeenCalledWith(
             '/spaces/1/blueprints/1/parameters',
-            expect.objectContaining({ name: 'title', type: 'string' }),
+            expect.objectContaining({ name: 'title', label: 'タイトル', type: 'string' }),
             expect.anything(),
         )
     })
@@ -161,6 +160,20 @@ describe('スペック編集画面', () => {
         setupEditMode()
         const inputs = screen.getAllByDisplayValue('title')
         expect(inputs[0]).toBeDisabled()
+    })
+
+    it('既存パラメータのタイプがPARAMETER_TYPESのlabelで表示される', () => {
+        setupEditMode()
+        // string → '1行テキスト' と表示されるべき（既存行 + 新規行の両方に出る）
+        expect(screen.getAllByDisplayValue('1行テキスト').length).toBeGreaterThanOrEqual(1)
+        // 生の 'string' は表示されない
+        expect(screen.queryByDisplayValue('string')).not.toBeInTheDocument()
+    })
+
+    it('既存パラメータのlabel（表示名）が表示される', () => {
+        setupEditMode()
+        // label: 'タイトル' が表示される
+        expect(screen.getByDisplayValue('タイトル')).toBeInTheDocument()
     })
 
     it('既存パラメータの削除ボタンを押すとDELETEが呼ばれる', () => {

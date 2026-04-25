@@ -19,6 +19,6 @@ class Spec extends Model
 
     public function parameters(): HasMany
     {
-        return $this->hasMany(Parameter::class);
+        return $this->hasMany(Parameter::class)->orderBy('sort_order');
     }
 }

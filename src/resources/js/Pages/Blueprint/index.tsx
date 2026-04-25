@@ -1,6 +1,6 @@
 import { router, usePage } from '@inertiajs/react'
 import { useState } from 'react'
-import SpecForm, { type ParameterRow } from './SpecForm'
+import SpecForm, { type ParameterRow, PARAMETER_TYPES } from './SpecForm'
 import ConfirmDialog from './ConfirmDialog'
 
 type Space = {
@@ -54,7 +54,7 @@ export default function Blueprint() {
                 `/spaces/${space.id}/blueprints/${blueprint.id}/parameters`,
                 {
                     name: row.name,
-                    label: row.name,
+                    label: row.label,
                     type: row.type,
                     is_required: false,
                     sort_order: index,
@@ -89,7 +89,7 @@ export default function Blueprint() {
                 `/spaces/${space.id}/blueprints/${blueprint.id}/parameters`,
                 {
                     name: row.name,
-                    label: row.name,
+                    label: row.label,
                     type: row.type,
                     is_required: false,
                     sort_order: nextSortOrder + index,
@@ -225,8 +225,17 @@ function SpecEditForm({
     return (
         <div>
             <div className="flex flex-col gap-3 mb-6">
-                {parameters.map((param) => (
+                {parameters.map((param) => {
+                    const typeDef = PARAMETER_TYPES.find((t) => t.value === param.type)
+                    const typeLabel = typeDef ? typeDef.label : param.type
+                    return (
                     <div key={param.id} className="flex gap-2">
+                        <input
+                            type="text"
+                            value={param.label}
+                            disabled
+                            className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm opacity-60"
+                        />
                         <input
                             type="text"
                             value={param.name}
@@ -234,11 +243,11 @@ function SpecEditForm({
                             className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm opacity-60"
                         />
                         <select
-                            value={param.type}
+                            value={typeLabel}
                             disabled
                             className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-surface)] px-3 py-2 text-sm opacity-60"
                         >
-                            <option value={param.type}>{param.type}</option>
+                            <option value={typeLabel}>{typeLabel}</option>
                         </select>
                         <button
                             type="button"
@@ -248,7 +257,8 @@ function SpecEditForm({
                             削除
                         </button>
                     </div>
-                ))}
+                    )
+                })}
             </div>
             <SpecForm onSubmit={onUpdate} submitLabel="更新" />
             <button

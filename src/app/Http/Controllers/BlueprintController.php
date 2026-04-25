@@ -27,16 +27,18 @@ class BlueprintController extends Controller
             'type' => ['required', 'in:single,multiple'],
         ]);
 
-        DB::transaction(function () use ($space, $validated) {
+        $blueprint = DB::transaction(function () use ($space, $validated) {
             $blueprint = Blueprint::create([
                 'space_id' => $space->id,
                 ...$validated,
             ]);
 
             Spec::create(['blueprint_id' => $blueprint->id]);
+
+            return $blueprint;
         });
 
-        return redirect("/spaces/{$space->id}");
+        return redirect("/spaces/{$space->id}/blueprints/{$blueprint->id}");
     }
 
     public function update(Request $request, Space $space, Blueprint $blueprint)

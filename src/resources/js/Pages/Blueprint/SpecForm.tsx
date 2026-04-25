@@ -19,6 +19,7 @@ export const PARAMETER_TYPES: ParameterTypeDefinition[] = [
 export type ParameterRow = {
     id: string
     name: string
+    label: string
     type: ParameterType
 }
 
@@ -29,13 +30,13 @@ type Props = {
 
 export default function SpecForm({ onSubmit, submitLabel }: Props) {
     const [rows, setRows] = useState<ParameterRow[]>([
-        { id: crypto.randomUUID(), name: '', type: 'string' },
+        { id: crypto.randomUUID(), name: '', label: '', type: 'string' },
     ])
 
     function addRow() {
         setRows((prev) => [
             ...prev,
-            { id: crypto.randomUUID(), name: '', type: 'string' },
+            { id: crypto.randomUUID(), name: '', label: '', type: 'string' },
         ])
     }
 
@@ -62,6 +63,13 @@ export default function SpecForm({ onSubmit, submitLabel }: Props) {
                     return (
                         <div key={row.id} className="flex flex-col gap-1">
                             <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={row.label}
+                                    onChange={(e) => updateRow(row.id, 'label', e.target.value)}
+                                    placeholder="表示名（日本語可）"
+                                    className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-interactive)]"
+                                />
                                 <input
                                     type="text"
                                     value={row.name}
