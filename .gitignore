@@ -5,3 +5,6 @@ src/.env
 src/storage/logs/*.log
 
 TODO.md
+
+.DS_Store
+**/.DS_Store

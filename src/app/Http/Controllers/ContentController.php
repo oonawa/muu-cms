@@ -10,6 +10,25 @@ use Illuminate\Validation\ValidationException;
 
 class ContentController extends Controller
 {
+    public function create(Space $space, Blueprint $blueprint)
+    {
+        return inertia('ContentCreate/index', [
+            'space' => $space,
+            'blueprint' => $blueprint,
+            'parameters' => $blueprint->spec->parameters,
+        ]);
+    }
+
+    public function edit(Space $space, Blueprint $blueprint, Content $content)
+    {
+        return inertia('ContentEdit/index', [
+            'space' => $space,
+            'blueprint' => $blueprint,
+            'parameters' => $blueprint->spec->parameters,
+            'content' => $content,
+        ]);
+    }
+
     public function store(Request $request, Space $space, Blueprint $blueprint)
     {
         if ($blueprint->type === 'single' && $blueprint->contents()->count() >= 1) {
@@ -24,7 +43,7 @@ class ContentController extends Controller
         $data = $this->extractData($blueprint, $validated);
         Content::create(['blueprint_id' => $blueprint->id, 'data' => $data]);
 
-        return redirect("/spaces/{$space->id}/blueprints/{$blueprint->id}");
+        return redirect("/spaces/{$space->id}/blueprints/{$blueprint->id}")->with('success', 'コンテンツを作成しました。');
     }
 
     public function update(Request $request, Space $space, Blueprint $blueprint, Content $content)
@@ -35,7 +54,7 @@ class ContentController extends Controller
         $data = $this->extractData($blueprint, $validated);
         $content->update(['data' => $data]);
 
-        return redirect("/spaces/{$space->id}/blueprints/{$blueprint->id}");
+        return redirect("/spaces/{$space->id}/blueprints/{$blueprint->id}")->with('success', 'コンテンツを更新しました。');
     }
 
     public function destroy(Space $space, Blueprint $blueprint, Content $content)
