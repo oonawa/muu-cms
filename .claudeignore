@@ -1,0 +1,30 @@
+# 依存パッケージ
+src/vendor/
+src/node_modules/
+
+# ビルド成果物
+src/public/build/
+src/bootstrap/cache/
+src/storage/framework/views/
+src/storage/framework/cache/
+src/storage/framework/sessions/
+
+# ログ・キャッシュ
+src/storage/logs/
+src/.phpunit.result.cache
+
+# テスト成果物
+src/test-results/
+
+# DB
+src/database/database.sqlite
+
+# ロックファイル
+src/composer.lock
+src/package-lock.json
+
+# Git
+.git/
+
+# その他
+docs/.DS_Store
